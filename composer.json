@@ -1,0 +1,26 @@
+{
+    "name": "supsign/laravel-mf-api",
+    "description": "Laravel Extension for Handling API for myFactory",
+    "keywords": ["composer", "script", "myFactory"],
+    "license": "MIT",
+    "authors": [
+    {
+        "name": "Fabrizio Cocco",
+        "email": "fabrizio.cocco@supsign.ch"
+    }],
+    "autoload": {
+        "psr-4": {
+            "Supsign\\LaravelMfApi\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Supsign\\LaravelMfApi\\LaravelMfApiServiceProvider"
+            ],
+            "aliases": {
+                "MyFactoryApi": "Supsign\\LaravelMfApi\\MyFactoryApi"
+            }
+        }
+    }
+}
