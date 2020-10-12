@@ -1,10 +1,10 @@
 <?php
 
-namespace Supsign\LaravelMfApi;
+namespace Supsign\LaravelMfRest;
 
 use Illuminate\Support\ServiceProvider;
 
-class LaravelMfApiServiceProvider extends ServiceProvider
+class LaravelMfRestServiceProvider extends ServiceProvider
 {
 
     public function boot() 

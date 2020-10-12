@@ -1,15 +1,17 @@
 <?php
 
-namespace Supsign\LaravelMfApi;
+namespace Supsign\LaravelMfRest;
 
 use Config;
+use SimpleXMLElement;
 
-class MyFactoryApi
+class MyFactoryRestApi
 {
     protected
     	$ch = null,
         $client = null,
-        $endpoint = '',
+        // $endpoint = '',
+        $endpoints = array(),
         $login = 'supsignHub',
         $password = 'kH5bI7sT3oJ3iN0k',
         $request = array(),
@@ -18,7 +20,7 @@ class MyFactoryApi
 
 	public function __construct() 
 	{
-
+		return $this;
 	}
 
 	protected function clearRequestData() 
@@ -41,29 +43,9 @@ class MyFactoryApi
 		return $this;
 	}
 
-	public function getEndPoints()
+	protected function getEndPoints()
 	{
-		$this->endpoint = '';
-
-		$workspace = $this->getResponse()->workspace;
-
-		var_dump(
-			$workspace->collection
-		);
-
-
-
-
-		// $results = $this->getResponse()->response->workspace->collection;
-
-		// foreach ($results AS $result) {
-		// 	var_dump(
-		// 		$result->{'@attributes'}->href
-		// 	);
-		// }
-
-
-
+		return $this->endpoints ?: $this->queryEndPoints()->endpoints;
 	}
 
     public function getResponse() 
@@ -74,6 +56,18 @@ class MyFactoryApi
 
         return $this->response;
     }
+
+    protected function queryEndPoints()
+	{
+		$this->endpoint = '';
+		$workspace = self::toStdClass($this->getResponse()->workspace);
+
+		foreach ($workspace->collection AS $endpoint) {
+			$this->endpoints[] = $endpoint->{'@attributes'}->href;
+		}
+
+		return $this;
+	}
 
 	protected function sendRequest() 
 	{
@@ -87,6 +81,17 @@ class MyFactoryApi
 		return $this;
 	}
 
+	protected function setEndPoint($endpoint) 
+	{
+		if (!in_array($endpoint, $this->getEndPoints())) {
+			throw new \Exception('invalid Endpoint', 1);
+		}
+
+		$this->endpoint = $endpoint;
+
+		return $this;
+	}
+
     protected function setRequestData(array $data)
     {
     	$this
@@ -96,9 +101,14 @@ class MyFactoryApi
     	return $this;
     }
 
+    protected static function toStdClass($element) 
+    {
+    	return json_decode(json_encode($element));
+    }
+
 	public function test() 
 	{
-		$this->getEndPoints();
+		$this->setEndPoint('test');
 
 		return $this;
 	}

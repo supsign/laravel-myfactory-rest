@@ -10,16 +10,16 @@
     }],
     "autoload": {
         "psr-4": {
-            "Supsign\\LaravelMfApi\\": "src/"
+            "Supsign\\LaravelMfRest\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Supsign\\LaravelMfApi\\LaravelMfApiServiceProvider"
+                "Supsign\\LaravelMfRest\\LaravelMfRestServiceProvider"
             ],
             "aliases": {
-                "MyFactoryApi": "Supsign\\LaravelMfApi\\MyFactoryApi"
+                "MyFactoryApi": "Supsign\\LaravelMfRest\\MyFactoryRest"
             }
         }
     }
