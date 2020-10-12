@@ -10,16 +10,20 @@ class MyFactoryRestApi
     protected
     	$ch = null,
         $client = null,
-        // $endpoint = '',
+        $endpoint = '',
         $endpoints = array(),
-        $login = 'supsignHub',
-        $password = 'kH5bI7sT3oJ3iN0k',
+        $login = null,
+        $password = null,
         $request = array(),
         $response = null,
-        $url = 'https://cloud.myfactory-ondemand.ch/saas/odata_howecekavikubisojoqa33/';
+        $url = null;
 
 	public function __construct() 
 	{
+		$this->login = env('MF_REST_LOGIN');
+		$this->password = env('MF_REST_PASSWORD');
+		$this->url = env('MF_REST_URL');
+
 		return $this;
 	}
 
@@ -36,6 +40,11 @@ class MyFactoryRestApi
 	{
 		$this->ch = curl_init();
 
+		if ($this->endpoint) {
+			curl_setopt($this->ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+			curl_setopt($this->ch, CURLOPT_USERPWD, $this->login.':'.$this->password);
+		}
+
 		curl_setopt($this->ch, CURLOPT_URL, $this->url.$this->endpoint);
 		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'GET');
@@ -43,9 +52,18 @@ class MyFactoryRestApi
 		return $this;
 	}
 
-	protected function getEndPoints()
+	public function getSalesOrders()
 	{
-		return $this->endpoints ?: $this->queryEndPoints()->endpoints;
+		$this->endpoint = 'Verkaufsbelege';
+
+		return $this->getResponse();
+	}
+
+	public function getSalesOrderPositions()
+	{
+		$this->endpoint = 'VerkaufsbelegPositionen';
+
+		return $this->getResponse();
 	}
 
     public function getResponse() 
@@ -54,20 +72,25 @@ class MyFactoryRestApi
     		$this->sendRequest();
     	}
 
-        return $this->response;
-    }
+    	// var_dump($this->response);
 
-    protected function queryEndPoints()
-	{
-		$this->endpoint = '';
-		$workspace = self::toStdClass($this->getResponse()->workspace);
+    	// $response = self::toStdClass($this->response);
+    	$response = $this->response;
 
-		foreach ($workspace->collection AS $endpoint) {
-			$this->endpoints[] = $endpoint->{'@attributes'}->href;
+    	if (isset($response->workspace)) {
+    		if (isset($response->workspace->collection)) {
+    			return $response->workspace->collection;
+    		}
+
+    		return $response->workspace;
+    	}
+
+		if (isset($response->entry)) {
+			return $response->entry;
 		}
 
-		return $this;
-	}
+    	return $response;
+    }
 
 	protected function sendRequest() 
 	{
@@ -75,19 +98,8 @@ class MyFactoryRestApi
 			$this->createRequest();
 		}
 
-		$this->response = simplexml_load_string(curl_exec($this->ch) );
+		$this->response = simplexml_load_string(curl_exec($this->ch));
 		curl_close($this->ch);
-
-		return $this;
-	}
-
-	protected function setEndPoint($endpoint) 
-	{
-		if (!in_array($endpoint, $this->getEndPoints())) {
-			throw new \Exception('invalid Endpoint', 1);
-		}
-
-		$this->endpoint = $endpoint;
 
 		return $this;
 	}
@@ -108,7 +120,26 @@ class MyFactoryRestApi
 
 	public function test() 
 	{
-		$this->setEndPoint('test');
+		$i = 0;
+		// var_dump(
+		// 	$this->getSalesOrderPositions()
+		// );
+
+		foreach ($this->getSalesOrderPositions() AS $pos) {
+
+
+			var_dump($pos->content->children('m', true)->properties->children('d', true));
+
+			// foreach ($pos->title AS $key => $value) {
+			// 	var_dump($key, $value);
+			// }
+
+
+			if ($i++ === 10)
+				break;
+		}
+
+		$this->response = null;
 
 		return $this;
 	}
