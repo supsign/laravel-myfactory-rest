@@ -3,6 +3,7 @@
 namespace Supsign\LaravelMfRest;
 
 use Config;
+use Exception;
 use SimpleXMLElement;
 
 class MyFactoryRestApi
@@ -52,6 +53,39 @@ class MyFactoryRestApi
 		return $this;
 	}
 
+	public function getProduct($id)
+	{
+		foreach ($this->getProducts() AS $product) {
+			$product = self::getProperties($product);
+
+			if ($product->PK_ArtikelID == $id OR $product->Artikelnummer == $id) {
+				return $product;
+			}
+		}
+
+		return null;
+	}
+
+	public function getProducts()
+	{
+		$this->endpoint = 'Artikel';
+
+		return $this->getResponse();
+	}
+
+	public function getSalesOrder($id)
+	{
+		foreach ($this->getSalesOrders() AS $salesOrder) {
+			$salesOrder = self::getProperties($salesOrder);
+
+			if ($salesOrder->PK_BelegID == $id) {
+				return $salesOrder;
+			}
+		}
+
+		return null;
+	}
+
 	public function getSalesOrders()
 	{
 		$this->endpoint = 'Verkaufsbelege';
@@ -59,37 +93,63 @@ class MyFactoryRestApi
 		return $this->getResponse();
 	}
 
-	public function getSalesOrderPositions()
+	public function getSalesOrderPosition($id)
 	{
-		$this->endpoint = 'VerkaufsbelegPositionen';
+		foreach ($this->getSalesOrderPositions() AS $salesOrderPosition) {
+			$salesOrderPosition = self::getProperties($salesOrderPosition);
 
-		return $this->getResponse();
+			if ($salesOrderPosition->PK_BelegPosID == $id) {
+				return $salesOrderPosition;
+			}
+		}
+
+		return null;
 	}
 
-    public function getResponse() 
+	public function getSalesOrderPositions($id)
+	{
+		$positions = array();
+		$this->endpoint = 'VerkaufsbelegPositionen';
+
+		foreach ($this->getResponse() AS $salesOrderPosition) {
+			$salesOrderPosition = self::getProperties($salesOrderPosition);
+
+			if ($salesOrderPosition->FK_BelegID == $id) {
+				$positions[] = $salesOrderPosition;
+			}
+		}
+
+		return $positions;
+	}
+
+	protected static function getProperties($element) 
+	{
+		return $element->content->children('m', true)->properties->children('d', true);
+	}
+
+    protected function getResponse() 
     {
+    	if (!$this->endpoint) {
+    		throw new Exception('no endpoint specified', 1);
+    	}
+
     	if (!$this->response) {
     		$this->sendRequest();
     	}
 
-    	// var_dump($this->response);
-
-    	// $response = self::toStdClass($this->response);
-    	$response = $this->response;
-
-    	if (isset($response->workspace)) {
-    		if (isset($response->workspace->collection)) {
-    			return $response->workspace->collection;
+    	if (isset($this->response->workspace)) {
+    		if (isset($this->response->workspace->collection)) {
+    			return $this->response->workspace->collection;
     		}
 
-    		return $response->workspace;
+    		return $this->response->workspace;
     	}
 
-		if (isset($response->entry)) {
-			return $response->entry;
+		if (isset($this->response->entry)) {
+			return $this->response->entry;
 		}
 
-    	return $response;
+    	return $this->response;
     }
 
 	protected function sendRequest() 
@@ -120,24 +180,12 @@ class MyFactoryRestApi
 
 	public function test() 
 	{
-		$i = 0;
-		// var_dump(
-		// 	$this->getSalesOrderPositions()
-		// );
 
-		foreach ($this->getSalesOrderPositions() AS $pos) {
+		var_dump(
+			$this->getProduct('A001272')
+		);
 
 
-			var_dump($pos->content->children('m', true)->properties->children('d', true));
-
-			// foreach ($pos->title AS $key => $value) {
-			// 	var_dump($key, $value);
-			// }
-
-
-			if ($i++ === 10)
-				break;
-		}
 
 		$this->response = null;
 
