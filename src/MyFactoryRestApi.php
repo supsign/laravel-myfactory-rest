@@ -9,6 +9,7 @@ use SimpleXMLElement;
 class MyFactoryRestApi
 {
     protected
+    	$cache = array(),
     	$ch = null,
         $client = null,
         $endpoint = '',
@@ -26,6 +27,11 @@ class MyFactoryRestApi
 		$this->url = env('MF_REST_URL');
 
 		return $this;
+	}
+
+	protected function clearCache()
+	{
+		$this->cache = array();
 	}
 
 	protected function clearRequestData() 
@@ -68,9 +74,14 @@ class MyFactoryRestApi
 
 	public function getProducts()
 	{
-		$this->endpoint = 'Artikel';
+		if (isset($this->cache['products'])) {
+			return $this->cache['products'];
+		}
 
-		return $this->getResponse();
+		$this->endpoint = 'Artikel';
+		$this->cache['products'] = $this->getResponse();
+
+		return $this->cache['products'];
 	}
 
 	public function getSalesOrder($id)
@@ -96,8 +107,6 @@ class MyFactoryRestApi
 	public function getSalesOrderPosition($id)
 	{
 		foreach ($this->getSalesOrderPositions() AS $salesOrderPosition) {
-			$salesOrderPosition = self::getProperties($salesOrderPosition);
-
 			if ($salesOrderPosition->PK_BelegPosID == $id) {
 				return $salesOrderPosition;
 			}
@@ -106,7 +115,7 @@ class MyFactoryRestApi
 		return null;
 	}
 
-	public function getSalesOrderPositions($id)
+	public function getSalesOrderPositions($id = null)
 	{
 		$positions = array();
 		$this->endpoint = 'VerkaufsbelegPositionen';
@@ -114,7 +123,7 @@ class MyFactoryRestApi
 		foreach ($this->getResponse() AS $salesOrderPosition) {
 			$salesOrderPosition = self::getProperties($salesOrderPosition);
 
-			if ($salesOrderPosition->FK_BelegID == $id) {
+			if ($salesOrderPosition->FK_BelegID == $id OR is_null($id)) {
 				$positions[] = $salesOrderPosition;
 			}
 		}
@@ -180,15 +189,6 @@ class MyFactoryRestApi
 
 	public function test() 
 	{
-
-		var_dump(
-			$this->getProduct('A001272')
-		);
-
-
-
-		$this->response = null;
-
 		return $this;
 	}
 }
