@@ -15,9 +15,11 @@ class MyFactoryRestApi
         $endpoint = '',
         $endpoints = array(),
         $login = null,
+        $parameters = array(),
         $password = null,
         $request = array(),
         $response = null,
+        $skipStep = 5000,
         $url = null;
 
 	public function __construct() 
@@ -52,7 +54,11 @@ class MyFactoryRestApi
 			curl_setopt($this->ch, CURLOPT_USERPWD, $this->login.':'.$this->password);
 		}
 
-		curl_setopt($this->ch, CURLOPT_URL, $this->url.$this->endpoint);
+		var_dump(
+			$this->url.$this->endpoint.$this->getParamterString()
+		);
+
+		curl_setopt($this->ch, CURLOPT_URL, $this->url.$this->endpoint.$this->getParamterString());
 		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'GET');
 
@@ -120,15 +126,41 @@ class MyFactoryRestApi
 		$positions = array();
 		$this->endpoint = 'VerkaufsbelegPositionen';
 
-		foreach ($this->getResponse() AS $salesOrderPosition) {
-			$salesOrderPosition = self::getProperties($salesOrderPosition);
+		do {
+			foreach ($this->getResponse() AS $salesOrderPosition) {
+				$salesOrderPosition = self::getProperties($salesOrderPosition);
 
-			if ($salesOrderPosition->FK_BelegID == $id OR is_null($id)) {
-				$positions[] = $salesOrderPosition;
+				if ($salesOrderPosition->FK_BelegID == $id OR is_null($id)) {
+					$positions[] = $salesOrderPosition;
+				}
 			}
-		}
+
+			if (!isset($this->parameters['$skip'])) {
+				$this->parameters['$skip'] = $this->skipStep;
+			} else {
+				$this->parameters['$skip'] += $this->skipStep;
+			}
+
+			$this->newRequest();
+
+		} while(count($positions) % $this->skipStep === 0);
 
 		return $positions;
+	}
+
+	protected function getParamterString()
+	{
+		if (!$this->parameters) {
+			return '';
+		}
+
+		$string = '?';
+
+		foreach ($this->parameters AS $key => $value) {
+			$pairs[] = implode('=', [$key, $value]);
+		}
+
+		return $string.implode('&', $pairs);
 	}
 
 	protected static function getProperties($element) 
@@ -159,6 +191,14 @@ class MyFactoryRestApi
 		}
 
     	return $this->response;
+    }
+
+    protected function newRequest() 
+    {
+    	$this->ch = null;
+    	$this->response = null;
+
+    	return $this;
     }
 
 	protected function sendRequest() 
