@@ -262,6 +262,14 @@ class MyFactoryRestApi
     			if (is_object($value)) {
     				$entry->$key = null;
     			}
+
+    			switch ($key) {
+    				case 'EANNummer':
+    					if (!is_numeric($value) OR $value == 0 OR floor(log10($value) + 1) != 13) {
+    						$entry->$key = null;
+    					}
+    					break;	
+    			}
     		}
     	}
 
