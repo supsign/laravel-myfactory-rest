@@ -94,6 +94,27 @@ class MyFactoryRestApi
 		return $this->cache['products'] = $this->clearResponse()->getResponse();
 	}
 
+	public function getProductGroup($id)
+	{
+		foreach ($this->getProductGroups() AS $productGroup) {
+			if ($productGroup->PK_ArtikelgruppeKurz == $id) {
+				return $productGroup;
+			}
+		}
+
+		throw new \Exception('productGroup not found', 1);
+	}
+
+	public function getProductGroups()
+	{
+		if (isset($this->cache['productsGroups'])) {
+			return $this->cache['productsGroups'];
+		}
+
+		$this->endpoint = 'Artikelgruppen';
+		return $this->cache['productsGroups'] = $this->clearResponse()->getResponse();
+	}
+
 	public function getSalesOrder($id)
 	{
 		foreach ($this->getSalesOrders() AS $salesOrder) {
@@ -124,7 +145,7 @@ class MyFactoryRestApi
 			}
 		}
 
-		return null;
+		throw new \Exception('position not found', 1);
 	}
 
 	public function getSalesOrderPositions($id = null)
