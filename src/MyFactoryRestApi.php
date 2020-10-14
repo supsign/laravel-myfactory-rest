@@ -19,6 +19,7 @@ class MyFactoryRestApi
         $password = null,
         $request = array(),
         $response = null,
+        $responseRaw = array(),
         $skipStep = 5000,
         $url = null;
 
@@ -34,6 +35,15 @@ class MyFactoryRestApi
 	protected function clearCache()
 	{
 		$this->cache = array();
+
+		return $this;
+	}
+
+	protected function clearResponse()
+	{
+		$this->response = null;
+
+		return $this;
 	}
 
 	protected function clearRequestData() 
@@ -54,10 +64,6 @@ class MyFactoryRestApi
 			curl_setopt($this->ch, CURLOPT_USERPWD, $this->login.':'.$this->password);
 		}
 
-		var_dump(
-			$this->url.$this->endpoint.$this->getParamterString()
-		);
-
 		curl_setopt($this->ch, CURLOPT_URL, $this->url.$this->endpoint.$this->getParamterString());
 		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, 'GET');
@@ -67,9 +73,9 @@ class MyFactoryRestApi
 
 	public function getProduct($id)
 	{
-		foreach ($this->getProducts() AS $product) {
-			$product = self::getProperties($product);
+		$this->clearResponse();
 
+		foreach ($this->getProducts() AS $product) {
 			if ($product->PK_ArtikelID == $id OR $product->Artikelnummer == $id) {
 				return $product;
 			}
@@ -79,22 +85,20 @@ class MyFactoryRestApi
 	}
 
 	public function getProducts()
-	{
+	{		
 		if (isset($this->cache['products'])) {
 			return $this->cache['products'];
 		}
 
 		$this->endpoint = 'Artikel';
-		$this->cache['products'] = $this->getResponse();
+		$this->cache['products'] = $this->clearResponse()->getResponse();
 
-		return $this->cache['products'];
+		return $this->getResponse();
 	}
 
 	public function getSalesOrder($id)
 	{
 		foreach ($this->getSalesOrders() AS $salesOrder) {
-			$salesOrder = self::getProperties($salesOrder);
-
 			if ($salesOrder->PK_BelegID == $id) {
 				return $salesOrder;
 			}
@@ -107,7 +111,7 @@ class MyFactoryRestApi
 	{
 		$this->endpoint = 'Verkaufsbelege';
 
-		return $this->getResponse();
+		return $this->clearResponse()->getResponse();
 	}
 
 	public function getSalesOrderPosition($id)
@@ -126,24 +130,11 @@ class MyFactoryRestApi
 		$positions = array();
 		$this->endpoint = 'VerkaufsbelegPositionen';
 
-		do {
-			foreach ($this->getResponse() AS $salesOrderPosition) {
-				$salesOrderPosition = self::getProperties($salesOrderPosition);
-
-				if ($salesOrderPosition->FK_BelegID == $id OR is_null($id)) {
-					$positions[] = $salesOrderPosition;
-				}
+		foreach ($this->getResponse() AS $salesOrderPosition) {
+			if ($salesOrderPosition->FK_BelegID == $id OR is_null($id)) {
+				$positions[] = $salesOrderPosition;
 			}
-
-			if (!isset($this->parameters['$skip'])) {
-				$this->parameters['$skip'] = $this->skipStep;
-			} else {
-				$this->parameters['$skip'] += $this->skipStep;
-			}
-
-			$this->newRequest();
-
-		} while(count($positions) % $this->skipStep === 0);
+		}
 
 		return $positions;
 	}
@@ -154,13 +145,11 @@ class MyFactoryRestApi
 			return '';
 		}
 
-		$string = '?';
-
 		foreach ($this->parameters AS $key => $value) {
 			$pairs[] = implode('=', [$key, $value]);
 		}
 
-		return $string.implode('&', $pairs);
+		return '?'.implode('&', $pairs);
 	}
 
 	protected static function getProperties($element) 
@@ -175,43 +164,39 @@ class MyFactoryRestApi
     	}
 
     	if (!$this->response) {
-    		$this->sendRequest();
+    		$this->sendRequests();
     	}
-
-    	if (isset($this->response->workspace)) {
-    		if (isset($this->response->workspace->collection)) {
-    			return $this->response->workspace->collection;
-    		}
-
-    		return $this->response->workspace;
-    	}
-
-		if (isset($this->response->entry)) {
-			return $this->response->entry;
-		}
 
     	return $this->response;
     }
 
-    protected function newRequest() 
-    {
-    	$this->ch = null;
-    	$this->response = null;
-
-    	return $this;
-    }
-
-	protected function sendRequest() 
+	protected function sendRequest()
 	{
-		if (!$this->ch) {
-			$this->createRequest();
-		}
-
-		$this->response = simplexml_load_string(curl_exec($this->ch));
+		$this->createRequest();
+		$this->setResponse(simplexml_load_string(curl_exec($this->ch)));
 		curl_close($this->ch);
 
 		return $this;
 	}
+
+    protected function sendRequests()
+    {
+    	do {
+    		$this->sendRequest();
+
+    		var_dump($this->parameters, $this->requestFinished);
+
+			if (!isset($this->parameters['$skip'])) {
+				$this->parameters['$skip'] = $this->skipStep;
+			} else {
+				$this->parameters['$skip'] += $this->skipStep;
+			}
+    	} while (!$this->requestFinished);
+
+    	$this->response = self::toStdClass($this->responseRaw);
+
+    	return $this;
+    }
 
     protected function setRequestData(array $data)
     {
@@ -222,6 +207,34 @@ class MyFactoryRestApi
     	return $this;
     }
 
+    protected function setResponse($response) 
+    {
+    	if (isset($response->workspace)) {
+    		if (isset($response->workspace->collection)) {
+    			$this->response = $response->workspace->collection;
+    		} else {
+    			$this->response = $response->workspace;
+    		}
+
+    		return $this;
+    	}
+
+    	if (!isset($response->entry)) {
+    		throw new Exception('not entry element found', 1);
+    	}
+
+    	$data = array();
+
+    	foreach ($response->entry AS $entry) {
+    		$data[] = self::getProperties($entry);
+    	}
+
+    	$this->requestFinished = count($data) % $this->skipStep !== 0;
+    	$this->responseRaw = array_merge($this->responseRaw, $data);
+
+		return $this;
+    }
+
     protected static function toStdClass($element) 
     {
     	return json_decode(json_encode($element));
@@ -229,6 +242,24 @@ class MyFactoryRestApi
 
 	public function test() 
 	{
+		var_dump(
+			$this->getProducts()
+		);
+
+
+		die();
+		$positions = $this->getSalesOrderPositions();
+
+		echo '<hr/>';
+
+		var_dump(
+			count($positions)
+		);
+
+		foreach ($positions AS $position) {
+			var_dump($position->PK_BelegPosID);
+		}
+
 		return $this;
 	}
 }
