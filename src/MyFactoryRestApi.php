@@ -253,8 +253,18 @@ class MyFactoryRestApi
 		return $this;
     }
 
-    protected static function toStdClass($element) 
+    protected static function toStdClass($collection) 
     {
-    	return json_decode(json_encode($element));
+    	$collection = json_decode(json_encode($collection));
+
+    	foreach ($collection AS $entry) {
+    		foreach ($entry AS $key => $value) {
+    			if (is_object($value)) {
+    				$entry->$key = null;
+    			}
+    		}
+    	}
+
+    	return $collection;
     }
 }
