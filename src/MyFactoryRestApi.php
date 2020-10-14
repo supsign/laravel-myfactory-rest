@@ -91,9 +91,7 @@ class MyFactoryRestApi
 		}
 
 		$this->endpoint = 'Artikel';
-		$this->cache['products'] = $this->clearResponse()->getResponse();
-
-		return $this->getResponse();
+		return $this->cache['products'] = $this->clearResponse()->getResponse();
 	}
 
 	public function getSalesOrder($id)
@@ -109,9 +107,13 @@ class MyFactoryRestApi
 
 	public function getSalesOrders()
 	{
+		if (isset($this->cache['salesOrders'])) {
+			return $this->cache['salesOrders'];
+		}
+
 		$this->endpoint = 'Verkaufsbelege';
 
-		return $this->clearResponse()->getResponse();
+		return $this->cache['salesOrders'] = $this->clearResponse()->getResponse();
 	}
 
 	public function getSalesOrderPosition($id)
@@ -127,13 +129,21 @@ class MyFactoryRestApi
 
 	public function getSalesOrderPositions($id = null)
 	{
+		if (isset($this->cache['salesOrderPositions']) AND !$id) {
+			return $this->cache['salesOrderPositions'];
+		}
+
 		$positions = array();
 		$this->endpoint = 'VerkaufsbelegPositionen';
 
 		foreach ($this->getResponse() AS $salesOrderPosition) {
-			if ($salesOrderPosition->FK_BelegID == $id OR is_null($id)) {
+			if (!$id OR $salesOrderPosition->FK_BelegID == $id) {
 				$positions[] = $salesOrderPosition;
 			}
+		}
+
+		if (!$id) {
+			$this->cache['salesOrderPositions'] = $positions;
 		}
 
 		return $positions;
@@ -183,8 +193,6 @@ class MyFactoryRestApi
     {
     	do {
     		$this->sendRequest();
-
-    		var_dump($this->parameters, $this->requestFinished);
 
 			if (!isset($this->parameters['$skip'])) {
 				$this->parameters['$skip'] = $this->skipStep;
@@ -239,27 +247,4 @@ class MyFactoryRestApi
     {
     	return json_decode(json_encode($element));
     }
-
-	public function test() 
-	{
-		var_dump(
-			$this->getProducts()
-		);
-
-
-		die();
-		$positions = $this->getSalesOrderPositions();
-
-		echo '<hr/>';
-
-		var_dump(
-			count($positions)
-		);
-
-		foreach ($positions AS $position) {
-			var_dump($position->PK_BelegPosID);
-		}
-
-		return $this;
-	}
 }
