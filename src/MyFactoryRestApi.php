@@ -42,6 +42,8 @@ class MyFactoryRestApi
 	protected function clearResponse()
 	{
 		$this->response = null;
+		$this->responseRaw = array();
+		$this->parameters = array();
 
 		return $this;
 	}
@@ -73,8 +75,6 @@ class MyFactoryRestApi
 
 	public function getProduct($id)
 	{
-		$this->clearResponse();
-
 		foreach ($this->getProducts() AS $product) {
 			if ($product->PK_ArtikelID == $id OR $product->Artikelnummer == $id) {
 				return $product;
@@ -129,24 +129,34 @@ class MyFactoryRestApi
 
 	public function getSalesOrderPositions($id = null)
 	{
-		if (isset($this->cache['salesOrderPositions']) AND !$id) {
+		if (isset($this->cache['salesOrderPositions'])) {
+			if ($id) {
+				foreach ($this->cache['salesOrderPositions'] AS $entry) {
+					if ($entry->FK_BelegID == $id) {
+						$result[] = $entry;
+					}
+				}
+
+				return $result;
+			}
+
 			return $this->cache['salesOrderPositions'];
 		}
 
-		$positions = array();
 		$this->endpoint = 'VerkaufsbelegPositionen';
+		$this->cache['salesOrderPositions'] = $this->clearResponse()->getResponse();
 
-		foreach ($this->getResponse() AS $salesOrderPosition) {
-			if (!$id OR $salesOrderPosition->FK_BelegID == $id) {
-				$positions[] = $salesOrderPosition;
+		if (!$id) {
+			return $this->getResponse();
+		}
+
+		foreach ($this->getResponse() AS $entry) {
+			if ($entry->FK_BelegID == $id) {
+				$result[] = $entry;
 			}
 		}
 
-		if (!$id) {
-			$this->cache['salesOrderPositions'] = $positions;
-		}
-
-		return $positions;
+		return $result;
 	}
 
 	protected function getParamterString()
