@@ -117,6 +117,10 @@ class MyFactoryRestApi
 		return $this->cache['customerGroups'] = $this->clearResponse()->getResponse();
 	}
 
+	public function getEndpoint() {
+		return $this->endpoint;
+	}
+
 	public function getProduct($id)
 	{
 		foreach ($this->getProducts() AS $product) {
