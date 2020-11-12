@@ -73,6 +73,50 @@ class MyFactoryRestApi
 		return $this;
 	}
 
+	public function getAddresses()
+	{
+		if (isset($this->cache['addresses'])) {
+			return $this->cache['addresses'];
+		}
+
+		$this->endpoint = 'Adressen';
+
+		return $this->cache['addresses'] = $this->clearResponse()->getResponse();
+	}
+
+	public function getAddressGroups()
+	{
+		if (isset($this->cache['addressGroups'])) {
+			return $this->cache['addressGroups'];
+		}
+
+		$this->endpoint = 'Adressgruppen';
+
+		return $this->cache['addressGroups'] = $this->clearResponse()->getResponse();
+	}
+
+	public function getCustomers()
+	{
+		if (isset($this->cache['customers'])) {
+			return $this->cache['customers'];
+		}
+
+		$this->endpoint = 'Kunden';
+
+		return $this->cache['customers'] = $this->clearResponse()->getResponse();
+	}
+
+	public function getCustomerGroups()
+	{
+		if (isset($this->cache['customerGroups'])) {
+			return $this->cache['customerGroups'];
+		}
+
+		$this->endpoint = 'Kundengruppen';
+
+		return $this->cache['customerGroups'] = $this->clearResponse()->getResponse();
+	}
+
 	public function getProduct($id)
 	{
 		foreach ($this->getProducts() AS $product) {
@@ -113,6 +157,28 @@ class MyFactoryRestApi
 
 		$this->endpoint = 'Artikelgruppen';
 		return $this->cache['productsGroups'] = $this->clearResponse()->getResponse();
+	}
+
+	public function getProjects()
+	{
+		if (isset($this->cache['projects'])) {
+			return $this->cache['projects'];
+		}
+
+		$this->endpoint = 'Projekte';
+
+		return $this->cache['projects'] = $this->clearResponse()->getResponse();
+	}
+
+	public function getProjectGroups()
+	{
+		if (isset($this->cache['projectGroups'])) {
+			return $this->cache['projectGroups'];
+		}
+
+		$this->endpoint = 'Projektgruppen';
+
+		return $this->cache['projectGroups'] = $this->clearResponse()->getResponse();
 	}
 
 	public function getSalesOrder($id)
@@ -178,6 +244,28 @@ class MyFactoryRestApi
 		}
 
 		return $result;
+	}
+
+	public function getSupportTickets()
+	{
+		if (isset($this->cache['supperTickets'])) {
+			return $this->cache['supperTickets'];
+		}
+
+		$this->endpoint = 'Supportfaelle';
+
+		return $this->cache['supperTickets'] = $this->clearResponse()->getResponse();
+	}	
+
+	public function getUsers()
+	{
+		if (isset($this->cache['users'])) {
+			return $this->cache['users'];
+		}
+
+		$this->endpoint = 'Benutzer';
+
+		return $this->cache['users'] = $this->clearResponse()->getResponse();
 	}
 
 	protected function getParamterString()
