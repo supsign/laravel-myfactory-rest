@@ -39,7 +39,7 @@ class MyFactoryRestApi
 		return $this;
 	}
 
-	protected function clearResponse()
+	public function clearResponse()
 	{
 		$this->response = null;
 		$this->responseRaw = array();
@@ -290,7 +290,7 @@ class MyFactoryRestApi
 		return $element->content->children('m', true)->properties->children('d', true);
 	}
 
-    protected function getResponse() 
+    public function getResponse() 
     {
     	if (!$this->endpoint) {
     		throw new Exception('no endpoint specified', 1);
@@ -328,6 +328,12 @@ class MyFactoryRestApi
 
     	return $this;
     }
+
+	public function setEndpoint($endpoint) {
+		$this->endpoint = $endpoint;
+
+		return $this;
+	}
 
     protected function setRequestData(array $data)
     {
