@@ -11,7 +11,6 @@ class MyFactoryRestApi
     protected
     	$cache = array(),
     	$ch = null,
-        $client = null,
         $endpoint = '',
         $endpoints = array(),
         $login = null,
