@@ -258,7 +258,18 @@ class MyFactoryRestApi
 		$this->endpoint = 'Supportfaelle';
 
 		return $this->cache['supperTickets'] = $this->clearResponse()->getResponse();
-	}	
+	}
+
+	public function getTimeEntries()
+	{
+		if (isset($this->cache['timeEntries'])) {
+			return $this->cache['timeEntries'];
+		}
+
+		$this->endpoint = 'Zeiteintraege';
+
+		return $this->cache['timeEntries'] = $this->clearResponse()->getResponse();
+	}
 
 	public function getUsers()
 	{
