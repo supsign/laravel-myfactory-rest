@@ -227,7 +227,7 @@ class MyFactoryRestApi
 					}
 				}
 
-				return $result;
+				return $result ?? [];
 			}
 
 			return $this->cache['salesOrderPositions'];
@@ -236,17 +236,7 @@ class MyFactoryRestApi
 		$this->endpoint = 'VerkaufsbelegPositionen';
 		$this->cache['salesOrderPositions'] = $this->clearResponse()->getResponse();
 
-		if (!$id) {
-			return $this->getResponse();
-		}
-
-		foreach ($this->getResponse() AS $entry) {
-			if ($entry->FK_BelegID == $id) {
-				$result[] = $entry;
-			}
-		}
-
-		return $result;
+		return $this->getSalesOrderPositions($id);
 	}
 
 	public function getSupportTickets()
