@@ -2,9 +2,8 @@
 
 namespace Supsign\LaravelMfRest;
 
-use Config;
 use Exception;
-use SimpleXMLElement;
+use stdClass;
 
 class MyFactoryRestApi
 {
@@ -72,6 +71,17 @@ class MyFactoryRestApi
 		return $this;
 	}
 
+	public function getAddress(int|string $id)
+	{
+		foreach ($this->getAddresses() AS $address) {
+			if ($address->PK_KundeID === $id OR $address->Kundennummer === $id) {
+				return $address;
+			}
+		}
+
+		return null;
+	}
+
 	public function getAddresses()
 	{
 		if (isset($this->cache['addresses'])) {
@@ -92,6 +102,17 @@ class MyFactoryRestApi
 		$this->endpoint = 'Adressgruppen';
 
 		return $this->cache['addressGroups'] = $this->clearResponse()->getResponse();
+	}
+
+	public function getCustomer(int|string $id): ?stdClass
+	{
+		foreach ($this->getCustomers() AS $customer) {
+			if ((int)$customer->PK_KundeID === (int)$id OR $customer->Kundennummer === $id) {
+				return $customer;
+			}
+		}
+
+		return null;
 	}
 
 	public function getCustomers()
@@ -129,6 +150,17 @@ class MyFactoryRestApi
 		}
 
 		return null;
+	}
+
+	public function getExpenses()
+	{
+		if (isset($this->cache['expenses'])) {
+			return $this->cache['expenses'];
+		}
+
+		$this->endpoint = 'ZeiteintraegeSpesen';
+
+		return $this->cache['expenses'] = $this->clearResponse()->getResponse();
 	}
 
 	public function getProducts()
@@ -182,6 +214,17 @@ class MyFactoryRestApi
 		$this->endpoint = 'Projektgruppen';
 
 		return $this->cache['projectGroups'] = $this->clearResponse()->getResponse();
+	}
+
+	public function getRessources()
+	{
+		if (isset($this->cache['ressources'])) {
+			return $this->cache['ressources'];
+		}
+
+		$this->endpoint = 'Ressource';
+
+		return $this->cache['ressources'] = $this->clearResponse()->getResponse();
 	}
 
 	public function getSalesOrder($id)
@@ -248,6 +291,17 @@ class MyFactoryRestApi
 		$this->endpoint = 'Supportfaelle';
 
 		return $this->cache['supperTickets'] = $this->clearResponse()->getResponse();
+	}
+
+	public function getTargetWorkingTime()
+	{
+		if (isset($this->cache['targetWorkingTime'])) {
+			return $this->cache['targetWorkingTime'];
+		}
+
+		$this->endpoint = 'idcMitarbeiterSollArbeitszeiten';
+
+		return $this->cache['targetWorkingTime'] = $this->clearResponse()->getResponse();	
 	}
 
 	public function getTimeEntries()
@@ -357,6 +411,13 @@ class MyFactoryRestApi
     	}
 
     	if (!isset($response->entry)) {
+    		dd(
+    			$this->url,
+    			$this->endpoint,
+    			$this->getParamterString(), 
+    			$response
+    		);
+
     		throw new Exception('not entry element found', 1);
     	}
 
