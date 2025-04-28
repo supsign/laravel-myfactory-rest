@@ -9,6 +9,7 @@ class MyFactoryRestApi extends BaseApi
 	protected array $headers = [
 		'Accept' => 'application/json'
 	];
+	protected int $perPage = 5000;
 
 	public function __construct() 
 	{
@@ -27,6 +28,11 @@ class MyFactoryRestApi extends BaseApi
 	public function getAddressGroups(): array
 	{
 		return $this->makeCall('Adressgruppen');
+	}
+
+	public function getCustomEndpoint(string $endpoint): array
+	{
+		return $this->makeCall($endpoint);
 	}
 
 	public function getCustomers(): array
@@ -74,6 +80,11 @@ class MyFactoryRestApi extends BaseApi
 		return $this->makeCall('VerkaufsbelegPositionen');
 	}
 
+	public function getSupportTicketActions(): array
+	{
+		return $this->makeCall('Supportfallaktionen');
+	}
+
 	public function getSupportTickets(): array
 	{
 		return $this->makeCall('Supportfaelle');
@@ -93,6 +104,8 @@ class MyFactoryRestApi extends BaseApi
 	{
 		return $this->makeCall('Benutzer');
 	}
+
+	protected function 
 
     protected function getResponse(): array|object
     {
