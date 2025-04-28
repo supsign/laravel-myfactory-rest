@@ -1,0 +1,71 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "061ec926afb2e9d4d30abc59cfd9b735",
+    "packages": [
+        {
+            "name": "supsign/base-api",
+            "version": "1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/supsign/base-api.git",
+                "reference": "da5a76cf6b2bf1114f5f0b621ea6475a1ce5b111"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/supsign/base-api/zipball/da5a76cf6b2bf1114f5f0b621ea6475a1ce5b111",
+                "reference": "da5a76cf6b2bf1114f5f0b621ea6475a1ce5b111",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "BaseApi": "Supsign\\Laravel\\BaseApi"
+                    },
+                    "providers": [
+                        "Supsign\\Laravel\\BaseApiServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Supsign\\Laravel\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Florian Ratz",
+                    "email": "florian.ratz@supsign.ch"
+                }
+            ],
+            "description": "Laravel Extension for APIs",
+            "keywords": [
+                "api",
+                "composer",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/supsign/base-api/issues",
+                "source": "https://github.com/supsign/base-api/tree/1.2"
+            },
+            "time": "2025-03-10T07:55:36+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
+}

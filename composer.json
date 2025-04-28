@@ -22,5 +22,8 @@
                 "MyFactoryApi": "Supsign\\LaravelMfRest\\MyFactoryRest"
             }
         }
+    },
+    "require": {
+        "supsign/base-api": "^1.2"
     }
 }
