@@ -2,6 +2,7 @@
 
 namespace Supsign\LaravelMfRest;
 
+use Illuminate\Support\Facades\Cache;
 use Supsign\Laravel\BaseApi;
 
 class MyFactoryRestApi extends BaseApi
@@ -17,98 +18,139 @@ class MyFactoryRestApi extends BaseApi
 		$this->clientSecret = env('MF_REST_PASSWORD');
 		$this->baseUrl = env('MF_REST_URL');
 
-		return $this->useBasicAuth();
+		return $this->useBasicAuth()->useCache();
 	}
 
 	public function getAddresses(): array
 	{
-		return $this->makeCall('Adressen');
+		return $this->depaginate('Adressen');
 	}
 
 	public function getAddressGroups(): array
 	{
-		return $this->makeCall('Adressgruppen');
+		return $this->depaginate('Adressgruppen');
 	}
 
 	public function getCustomEndpoint(string $endpoint): array
 	{
-		return $this->makeCall($endpoint);
+		return $this->depaginate($endpoint);
 	}
 
 	public function getCustomers(): array
 	{
-		return $this->makeCall('Kunden');
+		return $this->depaginate('Kunden');
 	}
 
 	public function getCustomerGroups(): array
 	{
-		return $this->makeCall('Kundengruppen');
+		return $this->depaginate('Kundengruppen');
 	}
 
 	public function getProducts(): array
 	{		
-		return $this->makeCall('Artikel');
+		return $this->depaginate('Artikel');
 	}
 
 	public function getProductGroups(): array
 	{
-		return $this->makeCall('Artikelgruppen');
+		return $this->depaginate('Artikelgruppen');
 	}
 
 	public function getProjects(): array
 	{
-		return $this->makeCall('Projekte');
+		return $this->depaginate('Projekte');
 	}
 
 	public function getProjectGroups(): array
 	{
-		return $this->makeCall('Projektgruppen');
+		return $this->depaginate('Projektgruppen');
 	}
 
 	public function getRessources(): array
 	{
-		return $this->makeCall('Ressource');
+		return $this->depaginate('Ressource');
 	}
 
 	public function getSalesOrders(): array
 	{
-		return $this->makeCall('Verkaufsbelege');
+		return $this->depaginate('Verkaufsbelege');
 	}
 
 	public function getSalesOrderPositions(): array
 	{
-		return $this->makeCall('VerkaufsbelegPositionen');
+		return $this->depaginate('VerkaufsbelegPositionen');
 	}
 
 	public function getSupportTicketActions(): array
 	{
-		return $this->makeCall('Supportfallaktionen');
+		return $this->depaginate('Supportfallaktionen');
 	}
 
 	public function getSupportTickets(): array
 	{
-		return $this->makeCall('Supportfaelle');
+		return $this->depaginate('Supportfaelle');
 	}
 
 	public function getTargetWorkingTime(): array
 	{
-		return $this->makeCall('idcMitarbeiterSollArbeitszeiten');
+		return $this->depaginate('idcMitarbeiterSollArbeitszeiten');
 	}
 
 	public function getTimeEntries(): array
 	{
-		return $this->makeCall('Zeiteintraege');
+		return $this->depaginate('Zeiteintraege');
 	}
 
 	public function getUsers()
 	{
-		return $this->makeCall('Benutzer');
+		return $this->depaginate('Benutzer');
 	}
 
-	protected function 
-
-    protected function getResponse(): array|object
+    protected function cacheResponse(): self
     {
-        return $this->response->value;
+        return $this;
     }
+
+    protected function getCacheKey(): string
+    {
+        if (empty($this->endpoint)) {
+            throw new \Exception('no endpoint was specified');
+        }
+
+        return static::class.':'.$this->endpoint;
+    }
+
+    protected function loadResponseFromCache(): bool
+    {
+        return false;
+    }
+
+	protected function depaginate(string $endpoint): array
+	{
+		$this->setEndpoint($endpoint);
+
+		if ($this->useCache && Cache::has($this->getCacheKey())) {
+			return Cache::get($this->getCacheKey());
+		}
+
+		$page = 0;
+		$result = [];
+
+		while (true) {
+			$response = $this->makeCall($endpoint, ['$skip' => $page]);
+			$result = array_merge($result, $response->value);
+
+			if (empty($response->{'odata.nextLink'})) {
+				break;
+			}
+
+			$page += $this->perPage;
+		}
+
+		if ($this->useCache) {
+			Cache::put($this->getCacheKey(), $result, $this->cacheLifetime * 60);
+		}
+
+		return $result;
+	}
 }
