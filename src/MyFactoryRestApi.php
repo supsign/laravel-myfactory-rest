@@ -18,7 +18,7 @@ class MyFactoryRestApi extends BaseApi
 		$this->clientSecret = env('MF_REST_PASSWORD');
 		$this->baseUrl = env('MF_REST_URL');
 
-		return $this->useBasicAuth()->useCache();
+		return $this->useBasicAuth();
 	}
 
 	public function getAddresses(): array
