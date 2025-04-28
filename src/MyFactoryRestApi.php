@@ -2,7 +2,6 @@
 
 namespace Supsign\LaravelMfRest;
 
-use Illuminate\Support\Collection;
 use Supsign\Laravel\BaseApi;
 
 class MyFactoryRestApi extends BaseApi
