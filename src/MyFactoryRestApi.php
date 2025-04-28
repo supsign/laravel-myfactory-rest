@@ -69,7 +69,7 @@ class MyFactoryRestApi extends BaseApi
 		return $this->makeCall('Verkaufsbelege');
 	}
 
-	public function getSalesOrderPositions(?int $salesOrderId = null): array
+	public function getSalesOrderPositions(): array
 	{
 		return $this->makeCall('VerkaufsbelegPositionen');
 	}
