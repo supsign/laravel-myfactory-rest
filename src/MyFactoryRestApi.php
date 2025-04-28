@@ -72,19 +72,7 @@ class MyFactoryRestApi extends BaseApi
 
 	public function getSalesOrderPositions(?int $salesOrderId = null): array
 	{
-		if (!is_null($salesOrderId)) {
-			$this->useCache();
-		}
-
-		return collect($this->makeCall('VerkaufsbelegPositionen'))
-			->when(
-				!is_null($salesOrderId),
-				fn (Collection $collection): Collection => $collection->filter(
-					fn (object $position): bool => $position->FK_BelegID === $salesOrderId,
-				),
-			)
-			->values()
-			->toArray();
+		return $this->makeCall('VerkaufsbelegPositionen');
 	}
 
 	public function getSupportTickets(): array
