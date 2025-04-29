@@ -10,6 +10,7 @@ class MyFactoryRestApi extends BaseApi
 	protected array $headers = [
 		'Accept' => 'application/json'
 	];
+	protected int $pageOffset = 0;
 	protected int $perPage = 5000;
 
 	public function __construct() 
@@ -112,6 +113,13 @@ class MyFactoryRestApi extends BaseApi
 		return $this->depaginate('Benutzer');
 	}
 
+	public function setPageOffset(?int $offset): self
+	{
+		$this->pageOffset = is_null($offset) ? 0 : abs($offset);
+
+		return $this;
+	}
+
     protected function cacheResponse(): self
     {
         return $this;
@@ -139,7 +147,7 @@ class MyFactoryRestApi extends BaseApi
 			return Cache::get($this->getCacheKey());
 		}
 
-		$page = 0;
+		$page = $this->pageOffset;
 		$result = [];
 
 		while (true) {
