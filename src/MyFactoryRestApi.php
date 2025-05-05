@@ -49,13 +49,7 @@ class MyFactoryRestApi extends BaseApi
 
 	public function getProducts(): array
 	{		
-		$products = $this
-			->useCache()
-			->depaginate('Artikel');
-
-		$this->useCache = false;
-
-		return $products;
+		return $this->depaginate('Artikel');
 	}
 
 	public function getProductGroups(): array
